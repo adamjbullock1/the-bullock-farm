@@ -385,7 +385,7 @@ export default function BookingCalendar({ bookings, currentUserId, isAdmin }: Pr
             )}
             {submitted && (
               <p className="text-sm text-green-700 bg-green-50 px-4 py-3 rounded-xl mb-3">
-                ✓ Stay requested! An admin will review it shortly.
+                {isAdmin ? "✓ You're booked!" : '✓ Stay requested! An admin will review it shortly.'}
               </p>
             )}
 
