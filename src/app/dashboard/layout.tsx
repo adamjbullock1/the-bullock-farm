@@ -30,6 +30,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <div className="max-w-7xl mx-auto px-6 sm:px-8 flex items-center gap-10">
           {/* Title aligned with sidebar */}
           <div className="w-56 shrink-0 flex items-center gap-2">
+            <div className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-gray-900 shrink-0">
+              <span className="text-white text-xs font-bold tracking-tight">BF</span>
+            </div>
             <span className="text-lg font-semibold text-gray-900">The Bullock Farm</span>
           </div>
           {/* Welcome + sign out aligned with content */}

@@ -53,6 +53,9 @@ export default function SignupPage() {
     <div className="min-h-screen flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gray-900 mb-5">
+            <span className="text-white text-2xl font-bold tracking-tight">BF</span>
+          </div>
           <h1 className="text-3xl font-semibold tracking-tight text-gray-900">The Bullock Farm</h1>
           <p className="mt-2 text-gray-500 text-sm">Create your account.</p>
         </div>

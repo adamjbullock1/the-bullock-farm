@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import {
   addSection, updateSection, deleteSection,
   addItem, updateItem, deleteItem,
@@ -11,12 +11,65 @@ type Section = { id: string; title: string; emoji: string; order_index: number; 
 
 type Props = { sections: Section[] }
 
+const EMOJIS = [
+  '🏡','🌿','🌾','🌻','🌲','🌳','🍂','🍃','🔥','💧','⭐','📌',
+  '🐄','🐓','🐑','🐕','🐈','🦌','🐝','🦋','🐛','🦎',
+  '🛖','🏕️','🛁','🚿','🍳','🍽️','☕','🧹','🪵','🪣','🔑','🔒',
+  '🚗','🛻','🚜','⛽','🅿️','🗺️','📍','🧭',
+  '📋','📝','✅','⚠️','🚫','ℹ️','💡','📞','🩹','🧰',
+  '🎣','🏊','🚴','🎯','🎮','🃏','🏈','⚽','🎸','🎉',
+]
+
+function EmojiPicker({ value, onChange }: { value: string; onChange: (e: string) => void }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        className="w-14 h-10 text-center border border-gray-200 rounded-lg text-xl hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 transition"
+        title="Choose emoji"
+      >
+        {value || '📌'}
+      </button>
+      {open && (
+        <div className="absolute left-0 top-12 z-30 bg-white border border-gray-200 rounded-2xl shadow-xl p-3 w-72">
+          <div className="grid grid-cols-8 gap-1">
+            {EMOJIS.map(e => (
+              <button
+                key={e}
+                type="button"
+                onClick={() => { onChange(e); setOpen(false) }}
+                className={`text-xl p-1.5 rounded-lg hover:bg-gray-100 transition ${value === e ? 'bg-gray-100' : ''}`}
+              >
+                {e}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function GuideEditor({ sections }: Props) {
   const [editingSectionId, setEditingSectionId] = useState<string | null>(null)
   const [editingItemId, setEditingItemId] = useState<string | null>(null)
   const [addingItemToSection, setAddingItemToSection] = useState<string | null>(null)
   const [showAddSection, setShowAddSection] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
+  const [newSectionEmoji, setNewSectionEmoji] = useState('📌')
+  const [editSectionEmoji, setEditSectionEmoji] = useState<Record<string, string>>({})
 
   return (
     <div className="space-y-4">
@@ -25,14 +78,16 @@ export default function GuideEditor({ sections }: Props) {
           {/* Section header */}
           {editingSectionId === section.id ? (
             <form
-              action={async (fd) => { await updateSection(section.id, fd); setEditingSectionId(null) }}
+              action={async (fd) => {
+                fd.set('emoji', editSectionEmoji[section.id] ?? section.emoji)
+                await updateSection(section.id, fd)
+                setEditingSectionId(null)
+              }}
               className="flex items-center gap-3 px-5 py-4 bg-gray-50 border-b border-gray-100"
             >
-              <input
-                name="emoji"
-                defaultValue={section.emoji}
-                className="w-12 text-center border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
-                placeholder="📌"
+              <EmojiPicker
+                value={editSectionEmoji[section.id] ?? section.emoji}
+                onChange={e => setEditSectionEmoji(prev => ({ ...prev, [section.id]: e }))}
               />
               <input
                 name="title"
@@ -148,14 +203,15 @@ export default function GuideEditor({ sections }: Props) {
       {/* Add new section */}
       {showAddSection ? (
         <form
-          action={async (fd) => { await addSection(fd); setShowAddSection(false) }}
+          action={async (fd) => {
+            fd.set('emoji', newSectionEmoji)
+            await addSection(fd)
+            setShowAddSection(false)
+            setNewSectionEmoji('📌')
+          }}
           className="bg-white rounded-2xl border-2 border-dashed border-gray-200 p-6 flex items-center gap-3"
         >
-          <input
-            name="emoji"
-            placeholder="📌"
-            className="w-14 text-center border border-gray-200 rounded-lg px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
-          />
+          <EmojiPicker value={newSectionEmoji} onChange={setNewSectionEmoji} />
           <input
             name="title"
             placeholder="Section name, e.g. House Rules"

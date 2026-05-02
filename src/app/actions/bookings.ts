@@ -49,7 +49,7 @@ export async function approveBooking(bookingId: string) {
   redirect('/dashboard/trips')
 }
 
-export async function deleteBooking(bookingId: string) {
+export async function deleteBooking(bookingId: string): Promise<{ error?: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -61,11 +61,14 @@ export async function deleteBooking(bookingId: string) {
   const { data: booking } = await supabase
     .from('bookings').select('user_id').eq('id', bookingId).single()
 
-  if (!booking) return
-  if (booking.user_id !== user.id && !profile?.is_admin) return
+  if (!booking) return { error: 'Booking not found' }
+  if (booking.user_id !== user.id && !profile?.is_admin) return { error: 'Not authorized' }
 
-  await supabase.from('bookings').delete().eq('id', bookingId)
+  const { error } = await supabase.from('bookings').delete().eq('id', bookingId)
+  if (error) return { error: error.message }
+
   revalidatePath('/dashboard')
+  return {}
 }
 
 export async function denyBooking(bookingId: string) {

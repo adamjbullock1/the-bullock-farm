@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import { deleteBooking } from '@/app/actions/bookings'
 
 type Profile = { full_name: string | null; email?: string | null; phone?: string | null }
@@ -81,11 +80,12 @@ function userColor(userId: string) {
   return PALETTE[h % PALETTE.length]
 }
 
-function StayMenu({ bookingId }: { bookingId: string }) {
+function StayMenu({ bookingId, onDeleted }: { bookingId: string; onDeleted: () => void }) {
   const [open, setOpen] = useState(false)
   const [confirm, setConfirm] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [err, setErr] = useState('')
   const ref = useRef<HTMLDivElement>(null)
-  const router = useRouter()
 
   useEffect(() => {
     function handler(e: MouseEvent) {
@@ -97,6 +97,17 @@ function StayMenu({ bookingId }: { bookingId: string }) {
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [])
+
+  async function handleDelete() {
+    setLoading(true)
+    const result = await deleteBooking(bookingId)
+    if (result?.error) {
+      setErr(result.error)
+      setLoading(false)
+    } else {
+      onDeleted()
+    }
+  }
 
   return (
     <div className="relative shrink-0" ref={ref}>
@@ -110,16 +121,19 @@ function StayMenu({ bookingId }: { bookingId: string }) {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-8 z-20 w-44 bg-white rounded-2xl shadow-lg border border-gray-100 py-1.5 text-sm">
+        <div className="absolute right-0 bottom-8 z-20 w-44 bg-white rounded-2xl shadow-lg border border-gray-100 py-1.5 text-sm">
           {confirm ? (
             <div className="px-3 py-2">
               <p className="text-xs text-gray-500 mb-2">Delete?</p>
+              {err && <p className="text-xs text-red-500 mb-2">{err}</p>}
               <div className="flex gap-2">
-                <form action={async () => { await deleteBooking(bookingId); router.refresh() }} className="flex-1">
-                  <button type="submit" className="w-full bg-red-500 text-white text-xs font-medium py-1.5 rounded-lg hover:bg-red-600 transition">
-                    Yes
-                  </button>
-                </form>
+                <button
+                  onClick={handleDelete}
+                  disabled={loading}
+                  className="flex-1 bg-red-500 text-white text-xs font-medium py-1.5 rounded-lg hover:bg-red-600 transition disabled:opacity-50"
+                >
+                  Yes
+                </button>
                 <button onClick={() => setConfirm(false)} className="flex-1 text-xs text-gray-500 border border-gray-200 py-1.5 rounded-lg hover:bg-gray-50 transition">
                   Cancel
                 </button>
@@ -139,10 +153,11 @@ function StayMenu({ bookingId }: { bookingId: string }) {
   )
 }
 
-export default function BookingCalendar({ bookings, currentUserId, isAdmin }: Props) {
+export default function BookingCalendar({ bookings: initialBookings, currentUserId, isAdmin }: Props) {
   const today = new Date()
   const todayStr = toDateStr(today)
 
+  const [bookings, setBookings] = useState(initialBookings)
   const [year, setYear] = useState(today.getFullYear())
   const [month, setMonth] = useState(today.getMonth())
   const [selectStart, setSelectStart] = useState<string | null>(null)
@@ -435,7 +450,7 @@ export default function BookingCalendar({ bookings, currentUserId, isAdmin }: Pr
 
       {/* Upcoming stays */}
       {allUpcomingStays.length > 0 && (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
           <div className="px-5 py-4 border-b border-gray-100">
             <h3 className="font-semibold text-gray-900 text-sm">Upcoming Stays</h3>
           </div>
@@ -460,7 +475,12 @@ export default function BookingCalendar({ bookings, currentUserId, isAdmin }: Pr
                         {formatDateRange(b.start_date, b.end_date)} · {nightCount(b.start_date, b.end_date)}
                       </p>
                     </div>
-                    {canDelete && <StayMenu bookingId={b.id} />}
+                    {canDelete && (
+                      <StayMenu
+                        bookingId={b.id}
+                        onDeleted={() => setBookings(prev => prev.filter(x => x.id !== b.id))}
+                      />
+                    )}
                   </div>
                 )
               })

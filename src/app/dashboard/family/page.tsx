@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { activateUser } from '@/app/actions/users'
@@ -19,7 +21,7 @@ export default async function FamilyMembersPage() {
       .select('id, email, full_name, created_at')
       .eq('is_active', false)
       .neq('id', user.id)
-      .order('created_at', { ascending: true }),
+      .order('created_at', { ascending: false }),
     supabase.from('profiles').select('is_admin').eq('id', user.id).single(),
   ])
 
