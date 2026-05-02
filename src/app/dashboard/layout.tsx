@@ -24,7 +24,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const firstName = profile?.full_name?.split(' ')[0] ?? ''
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       {/* Top bar */}
       <nav className="bg-white border-b border-gray-100 px-6 py-4">
         <div className="max-w-5xl mx-auto flex items-center justify-between">

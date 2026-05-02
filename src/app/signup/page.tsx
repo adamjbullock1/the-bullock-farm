@@ -47,7 +47,7 @@ export default function SignupPage() {
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-semibold tracking-tight text-gray-900">The Bullock Farm</h1>
-          <p className="mt-2 text-gray-500 text-sm">Create your family account.</p>
+          <p className="mt-2 text-gray-500 text-sm">Create your account.</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
