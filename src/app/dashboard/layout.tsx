@@ -25,31 +25,36 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Top bar */}
-      <nav className="bg-white border-b border-gray-100 px-6 py-4">
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
+      {/* Top bar — mirrors sidebar layout so title/signout align with tabs/content */}
+      <nav className="bg-white border-b border-gray-100 py-4">
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 flex items-center gap-10">
+          {/* Title aligned with sidebar */}
+          <div className="w-56 shrink-0 flex items-center gap-2">
             <span className="text-lg font-semibold text-gray-900">The Bullock Farm</span>
-            {firstName && (
-              <span className="text-gray-400 text-sm hidden sm:inline">· Welcome back, {firstName}</span>
-            )}
           </div>
-          <form action={signOut}>
-            <button type="submit" className="text-sm text-gray-500 hover:text-gray-900 transition">
-              Sign out
-            </button>
-          </form>
+          {/* Welcome + sign out aligned with content */}
+          <div className="flex-1 flex items-center justify-end min-w-0 gap-3">
+            {firstName && (
+              <span className="text-gray-400 text-sm hidden sm:inline">Hi, {firstName}</span>
+            )}
+            {firstName && <span className="text-gray-200 text-sm hidden sm:inline">|</span>}
+            <form action={signOut}>
+              <button type="submit" className="text-sm text-gray-500 hover:text-gray-900 transition">
+                Sign out
+              </button>
+            </form>
+          </div>
         </div>
       </nav>
 
       {/* Sidebar + content */}
-      <div className="max-w-5xl mx-auto px-8 sm:px-12 py-10 flex flex-col md:flex-row gap-12">
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 py-10 flex flex-col md:flex-row gap-10">
         <DashboardNav
           isAdmin={profile?.is_admin ?? false}
           tripCount={tripCount ?? 0}
           memberCount={memberCount ?? 0}
         />
-        <main className="flex-1 min-w-0">
+        <main className="flex-1 min-w-0 max-w-3xl">
           {children}
         </main>
       </div>
