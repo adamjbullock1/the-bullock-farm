@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback, useRef, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { deleteBooking } from '@/app/actions/bookings'
 
 type Profile = { full_name: string | null; email?: string | null; phone?: string | null }
@@ -84,6 +85,7 @@ function StayMenu({ bookingId }: { bookingId: string }) {
   const [open, setOpen] = useState(false)
   const [confirm, setConfirm] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  const router = useRouter()
 
   useEffect(() => {
     function handler(e: MouseEvent) {
@@ -111,11 +113,11 @@ function StayMenu({ bookingId }: { bookingId: string }) {
         <div className="absolute right-0 top-8 z-20 w-44 bg-white rounded-2xl shadow-lg border border-gray-100 py-1.5 text-sm">
           {confirm ? (
             <div className="px-3 py-2">
-              <p className="text-xs text-gray-500 mb-2">Delete this booking?</p>
+              <p className="text-xs text-gray-500 mb-2">Delete?</p>
               <div className="flex gap-2">
-                <form action={deleteBooking.bind(null, bookingId)} className="flex-1">
+                <form action={async () => { await deleteBooking(bookingId); router.refresh() }} className="flex-1">
                   <button type="submit" className="w-full bg-red-500 text-white text-xs font-medium py-1.5 rounded-lg hover:bg-red-600 transition">
-                    Yes, delete
+                    Yes
                   </button>
                 </form>
                 <button onClick={() => setConfirm(false)} className="flex-1 text-xs text-gray-500 border border-gray-200 py-1.5 rounded-lg hover:bg-gray-50 transition">
@@ -128,7 +130,7 @@ function StayMenu({ bookingId }: { bookingId: string }) {
               onClick={() => setConfirm(true)}
               className="w-full text-left px-4 py-2.5 hover:bg-red-50 text-red-500 transition"
             >
-              🗑 Delete booking
+              🗑 Delete Stay
             </button>
           )}
         </div>

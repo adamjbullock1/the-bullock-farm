@@ -8,6 +8,13 @@ export default function SignupPage() {
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
+
+  function formatPhone(value: string) {
+    const digits = value.replace(/\D/g, '').slice(0, 10)
+    if (digits.length <= 3) return digits
+    if (digits.length <= 6) return `${digits.slice(0, 3)}-${digits.slice(3)}`
+    return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`
+  }
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -80,9 +87,9 @@ export default function SignupPage() {
                 type="tel"
                 required
                 value={phone}
-                onChange={e => setPhone(e.target.value)}
+                onChange={e => setPhone(formatPhone(e.target.value))}
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition"
-                placeholder="+1 555 000 0000"
+                placeholder="555-000-0000"
               />
             </div>
             <div>

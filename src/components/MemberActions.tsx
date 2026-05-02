@@ -11,7 +11,7 @@ type Member = {
   is_admin: boolean
 }
 
-export default function MemberActions({ member }: { member: Member }) {
+export default function MemberActions({ member, selfOnly = false }: { member: Member; selfOnly?: boolean }) {
   const [open, setOpen] = useState(false)
   const [modal, setModal] = useState<'edit' | 'remove' | null>(null)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -49,21 +49,25 @@ export default function MemberActions({ member }: { member: Member }) {
             >
               ✏️ Edit details
             </button>
-            <form action={toggleAdmin.bind(null, member.id, member.is_admin)}>
-              <button
-                type="submit"
-                className="w-full text-left px-4 py-2.5 hover:bg-gray-50 text-gray-700 transition"
-              >
-                {member.is_admin ? '🔽 Remove admin' : '⭐ Make admin'}
-              </button>
-            </form>
-            <div className="border-t border-gray-100 my-1" />
-            <button
-              onClick={() => { setModal('remove'); setOpen(false) }}
-              className="w-full text-left px-4 py-2.5 hover:bg-red-50 text-red-500 transition"
-            >
-              🚫 Remove access
-            </button>
+            {!selfOnly && (
+              <>
+                <form action={toggleAdmin.bind(null, member.id, member.is_admin)}>
+                  <button
+                    type="submit"
+                    className="w-full text-left px-4 py-2.5 hover:bg-gray-50 text-gray-700 transition"
+                  >
+                    {member.is_admin ? '🔽 Remove admin' : '⭐ Make admin'}
+                  </button>
+                </form>
+                <div className="border-t border-gray-100 my-1" />
+                <button
+                  onClick={() => { setModal('remove'); setOpen(false) }}
+                  className="w-full text-left px-4 py-2.5 hover:bg-red-50 text-red-500 transition"
+                >
+                  🚫 Remove access
+                </button>
+              </>
+            )}
           </div>
         )}
       </div>

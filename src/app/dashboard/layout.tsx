@@ -43,7 +43,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       </nav>
 
       {/* Sidebar + content */}
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 flex flex-col md:flex-row gap-6">
+      <div className="max-w-5xl mx-auto px-8 sm:px-12 py-10 flex flex-col md:flex-row gap-12">
         <DashboardNav
           isAdmin={profile?.is_admin ?? false}
           tripCount={tripCount ?? 0}

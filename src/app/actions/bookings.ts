@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
 export async function createBooking(formData: FormData) {
@@ -60,11 +61,11 @@ export async function deleteBooking(bookingId: string) {
   const { data: booking } = await supabase
     .from('bookings').select('user_id').eq('id', bookingId).single()
 
-  if (!booking) redirect('/dashboard')
-  if (booking.user_id !== user.id && !profile?.is_admin) redirect('/dashboard')
+  if (!booking) return
+  if (booking.user_id !== user.id && !profile?.is_admin) return
 
   await supabase.from('bookings').delete().eq('id', bookingId)
-  redirect('/dashboard')
+  revalidatePath('/dashboard')
 }
 
 export async function denyBooking(bookingId: string) {

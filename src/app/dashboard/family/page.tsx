@@ -103,15 +103,16 @@ export default async function FamilyMembersPage() {
                       <p className="text-sm text-gray-400 mt-0.5">{u.phone}</p>
                     )}
                   </div>
-                  {isAdmin && !isMe && (
-                    <MemberActions member={{
-                      id: u.id,
-                      full_name: u.full_name,
-                      email: u.email,
-                      phone: u.phone ?? null,
-                      is_admin: u.is_admin,
-                    }} />
-                  )}
+                  {isMe ? (
+                    <MemberActions
+                      member={{ id: u.id, full_name: u.full_name, email: u.email, phone: u.phone ?? null, is_admin: u.is_admin }}
+                      selfOnly
+                    />
+                  ) : isAdmin ? (
+                    <MemberActions
+                      member={{ id: u.id, full_name: u.full_name, email: u.email, phone: u.phone ?? null, is_admin: u.is_admin }}
+                    />
+                  ) : null}
                 </div>
               )
             })}
