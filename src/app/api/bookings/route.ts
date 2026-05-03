@@ -43,8 +43,12 @@ export async function POST(request: Request) {
 
   const status = profile?.is_admin ? 'approved' : 'pending'
 
+  // Admins can book on behalf of another user
+  const requestedUserId = formData.get('user_id') as string | null
+  const bookingUserId = (profile?.is_admin && requestedUserId) ? requestedUserId : user.id
+
   const { error } = await supabase.from('bookings').insert({
-    user_id: user.id,
+    user_id: bookingUserId,
     start_date,
     end_date,
     status,

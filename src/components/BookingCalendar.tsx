@@ -14,10 +14,13 @@ type Booking = {
   profiles?: Profile | Profile[] | null
 }
 
+type Member = { id: string; full_name: string | null }
+
 type Props = {
   bookings: Booking[]
   currentUserId: string
   isAdmin: boolean
+  members?: Member[]
 }
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -153,11 +156,12 @@ function StayMenu({ bookingId, onDeleted }: { bookingId: string; onDeleted: () =
   )
 }
 
-export default function BookingCalendar({ bookings: initialBookings, currentUserId, isAdmin }: Props) {
+export default function BookingCalendar({ bookings: initialBookings, currentUserId, isAdmin, members = [] }: Props) {
   const today = new Date()
   const todayStr = toDateStr(today)
 
   const [bookings, setBookings] = useState(initialBookings)
+  const [bookForId, setBookForId] = useState<string>(currentUserId)
   const [year, setYear] = useState(today.getFullYear())
   const [month, setMonth] = useState(today.getMonth())
   const [selectStart, setSelectStart] = useState<string | null>(null)
@@ -385,23 +389,8 @@ export default function BookingCalendar({ bookings: initialBookings, currentUser
           </div>
         </div>
 
-        {/* Legend + request bar — always visible at the bottom of the calendar card */}
-        <div className="border-t border-gray-100">
-          {/* Legend */}
-          <div className="flex items-center gap-5 px-6 py-3 text-xs text-gray-500">
-            <span className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded bg-gray-200 inline-block" /> Unavailable
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded bg-amber-50 border border-amber-200 inline-block" /> Pending
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded bg-blue-600 inline-block" /> Your selection
-            </span>
-          </div>
-
-          {/* Request bar */}
-          <div className="px-6 pb-5">
+        {/* Request bar */}
+        <div className="border-t border-gray-100 px-6 pb-5 pt-4">
             {error && (
               <p className="text-sm text-red-600 bg-red-50 px-4 py-3 rounded-xl mb-3">{error}</p>
             )}
@@ -424,32 +413,60 @@ export default function BookingCalendar({ bookings: initialBookings, currentUser
                     setError(data.error || 'Something went wrong.')
                   }
                 }}
-                className="flex items-center gap-3"
+                className="space-y-2"
               >
                 <input type="hidden" name="start_date" value={rangeStart} />
                 <input type="hidden" name="end_date" value={rangeEnd} />
-                <div className="flex-1 text-sm text-gray-700 font-medium">
-                  {parseLocal(rangeStart).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                  {' – '}
-                  {parseLocal(rangeEnd).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                  <span className="text-gray-400 font-normal ml-2">· {nightCount(rangeStart, rangeEnd)}</span>
+                <input type="hidden" name="user_id" value={bookForId} />
+
+                {/* Admin: book for selector */}
+                {isAdmin && members.length > 0 && (
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Booking for</label>
+                    <div className="relative">
+                      <select
+                        value={bookForId}
+                        onChange={e => setBookForId(e.target.value)}
+                        className="w-full appearance-none border border-gray-200 rounded-xl pl-3 pr-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 bg-white"
+                      >
+                        {members.map(m => (
+                          <option key={m.id} value={m.id}>
+                            {m.full_name || '(No name)'}{m.id === currentUserId ? ' (you)' : ''}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
+                          <path d="M6 9l6 6 6-6"/>
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-3">
+                  <div className="flex-1 text-sm text-gray-700 font-medium">
+                    {parseLocal(rangeStart).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    {' – '}
+                    {parseLocal(rangeEnd).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    <span className="text-gray-400 font-normal ml-2">· {nightCount(rangeStart, rangeEnd)}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => { setSelectStart(null); setSelectEnd(null); setError('') }}
+                    className="text-sm text-gray-400 hover:text-gray-700 transition px-2"
+                  >
+                    Clear
+                  </button>
+                  <button
+                    type="submit"
+                    className="bg-blue-600 text-white text-sm font-medium px-5 py-2.5 rounded-xl hover:bg-blue-700 transition whitespace-nowrap"
+                  >
+                    {isAdmin ? 'Reserve' : 'Request Stay'}
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => { setSelectStart(null); setSelectEnd(null); setError('') }}
-                  className="text-sm text-gray-400 hover:text-gray-700 transition px-2"
-                >
-                  Clear
-                </button>
-                <button
-                  type="submit"
-                  className="bg-blue-600 text-white text-sm font-medium px-5 py-2.5 rounded-xl hover:bg-blue-700 transition whitespace-nowrap"
-                >
-                  {isAdmin ? 'Reserve' : 'Request Stay'}
-                </button>
               </form>
             ) : null}
-          </div>
         </div>
       </div>
 

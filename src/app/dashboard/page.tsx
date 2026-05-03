@@ -10,13 +10,14 @@ export default async function DashboardPage() {
 
   if (!user) redirect('/login')
 
-  const [{ data: bookings }, { data: profile }] = await Promise.all([
+  const [{ data: bookings }, { data: profile }, { data: members }] = await Promise.all([
     supabase
       .from('bookings')
       .select('id, start_date, end_date, status, user_id, profiles!bookings_user_id_fkey(full_name, email, phone)')
       .in('status', ['approved', 'pending'])
       .order('start_date', { ascending: true }),
     supabase.from('profiles').select('is_admin').eq('id', user.id).single(),
+    supabase.from('profiles').select('id, full_name').eq('is_active', true).order('full_name'),
   ])
 
   return (
@@ -27,6 +28,7 @@ export default async function DashboardPage() {
         bookings={bookings ?? []}
         currentUserId={user.id}
         isAdmin={profile?.is_admin ?? false}
+        members={profile?.is_admin ? (members ?? []) : []}
       />
     </div>
   )
