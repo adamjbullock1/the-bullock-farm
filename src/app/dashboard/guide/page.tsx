@@ -18,9 +18,9 @@ export default async function GuidePage() {
     return (
       <div className="max-w-2xl">
         <div className="mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">Farm Guide</h2>
+          <h2 className="text-xl font-semibold text-gray-900">📖 Farm Guide</h2>
           <p className="text-sm text-gray-500 mt-1">
-            Add tips and instructions for guests. Organised into sections they can read before their stay.
+            Add tips and instructions for guests.
           </p>
         </div>
         <GuideEditor sections={sections ?? []} />
@@ -31,7 +31,7 @@ export default async function GuidePage() {
   return (
     <div className="max-w-2xl">
       <div className="mb-6">
-        <h2 className="text-xl font-semibold text-gray-900">Farm Guide</h2>
+        <h2 className="text-xl font-semibold text-gray-900">📖 Farm Guide</h2>
         <p className="text-sm text-gray-500 mt-1">
           Everything you need to know for your stay at the farm.
         </p>

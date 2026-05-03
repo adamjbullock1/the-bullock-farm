@@ -21,7 +21,7 @@ export default async function DashboardPage() {
 
   return (
     <div>
-      <h2 className="text-xl font-semibold text-gray-900 mb-1">Calendar</h2>
+      <h2 className="text-xl font-semibold text-gray-900 mb-1">🏡 Calendar</h2>
       <p className="text-gray-500 text-sm mb-6">See who's coming and request your own stay.</p>
       <BookingCalendar
         bookings={bookings ?? []}

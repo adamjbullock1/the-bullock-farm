@@ -17,12 +17,12 @@ export default async function TripsPage() {
   if (!pendingBookings || pendingBookings.length === 0) {
     return (
       <div>
-        <h2 className="text-xl font-semibold text-gray-900 mb-1">Trip Requests</h2>
+        <h2 className="text-xl font-semibold text-gray-900 mb-1">📅 Stay Requests</h2>
         <p className="text-sm text-gray-500 mb-6">Say yes or no to upcoming visits.</p>
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center">
           <p className="text-3xl mb-3">✅</p>
           <p className="font-medium text-gray-700">All caught up!</p>
-          <p className="text-sm text-gray-400 mt-1">No trip requests waiting for a response.</p>
+          <p className="text-sm text-gray-400 mt-1">No stay requests waiting for a response.</p>
         </div>
       </div>
     )
@@ -30,7 +30,7 @@ export default async function TripsPage() {
 
   return (
     <div>
-      <h2 className="text-xl font-semibold text-gray-900 mb-1">Trip Requests</h2>
+      <h2 className="text-xl font-semibold text-gray-900 mb-1">📅 Stay Requests</h2>
       <p className="text-sm text-gray-500 mb-6">Say yes or no to upcoming visits.</p>
 
       <div className="space-y-4">

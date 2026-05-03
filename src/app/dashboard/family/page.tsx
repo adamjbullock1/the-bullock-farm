@@ -66,7 +66,7 @@ export default async function FamilyMembersPage() {
 
       {/* ── Active members ── */}
       <section>
-        <h2 className="text-xl font-semibold text-gray-900 mb-1">Family Members</h2>
+        <h2 className="text-xl font-semibold text-gray-900 mb-1">👨‍👩‍👧‍👦 Family Members</h2>
         {!isAdmin && (
           <p className="text-sm text-gray-500 mb-4">Everyone who has access to the farm portal.</p>
         )}
