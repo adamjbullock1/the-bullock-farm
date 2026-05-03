@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
+import { notifyAdminsOfSignup } from '@/app/actions/users'
 
 export default function SignupPage() {
   const [fullName, setFullName] = useState('')
@@ -45,6 +46,9 @@ export default function SignupPage() {
 
     // Save phone to profile (trigger already handles full_name)
     await supabase.from('profiles').update({ phone }).eq('id', data.user!.id)
+
+    // Notify admins of new signup
+    await notifyAdminsOfSignup(fullName, email)
 
     window.location.href = '/pending'
   }

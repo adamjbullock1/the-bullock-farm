@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import DashboardNav from '@/components/DashboardNav'
@@ -55,7 +57,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <DashboardNav
           isAdmin={profile?.is_admin ?? false}
           tripCount={tripCount ?? 0}
-          memberCount={memberCount ?? 0}
+          memberCount={profile?.is_admin ? (memberCount ?? 0) : 0}
         />
         <main className="flex-1 min-w-0 max-w-3xl">
           {children}

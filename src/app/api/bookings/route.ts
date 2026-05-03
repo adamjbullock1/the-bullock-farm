@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { NextResponse } from 'next/server'
+import { sendNewBookingAlert } from '@/lib/email'
 
 export async function POST(request: Request) {
   const supabase = await createClient()
@@ -38,7 +39,7 @@ export async function POST(request: Request) {
   }
 
   const { data: profile } = await supabase
-    .from('profiles').select('is_admin').eq('id', user.id).single()
+    .from('profiles').select('is_admin, full_name, email').eq('id', user.id).single()
 
   const status = profile?.is_admin ? 'approved' : 'pending'
 
@@ -50,6 +51,15 @@ export async function POST(request: Request) {
   })
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  // Notify admins of new pending request (non-admin bookings only)
+  if (status === 'pending') {
+    const { data: admins } = await supabase
+      .from('profiles').select('email').eq('is_admin', true).eq('is_active', true)
+    const adminEmails = (admins ?? []).map(a => a.email).filter(Boolean) as string[]
+    const requesterName = profile?.full_name || profile?.email || 'Someone'
+    await sendNewBookingAlert(adminEmails, requesterName, start_date, end_date)
+  }
 
   revalidatePath('/dashboard')
   revalidatePath('/dashboard/trips')

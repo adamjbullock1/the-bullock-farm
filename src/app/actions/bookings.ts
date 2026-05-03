@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { sendBookingApproved, sendBookingDenied } from '@/lib/email'
 
 export async function createBooking(formData: FormData) {
   const supabase = await createClient()
@@ -41,10 +42,26 @@ export async function approveBooking(bookingId: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
+  const { data: booking } = await supabase
+    .from('bookings')
+    .select('start_date, end_date, user_id')
+    .eq('id', bookingId)
+    .single()
+
   await supabase
     .from('bookings')
     .update({ status: 'approved', processed_by: user.id })
     .eq('id', bookingId)
+
+  // Email the booker
+  if (booking) {
+    const { data: profile } = await supabase
+      .from('profiles').select('email, full_name').eq('id', booking.user_id).single()
+    if (profile?.email) {
+      const firstName = profile.full_name?.split(' ')[0] || 'there'
+      await sendBookingApproved(profile.email, firstName, booking.start_date, booking.end_date)
+    }
+  }
 
   redirect('/dashboard/trips')
 }
@@ -76,10 +93,26 @@ export async function denyBooking(bookingId: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
+  const { data: booking } = await supabase
+    .from('bookings')
+    .select('start_date, end_date, user_id')
+    .eq('id', bookingId)
+    .single()
+
   await supabase
     .from('bookings')
     .update({ status: 'denied', processed_by: user.id })
     .eq('id', bookingId)
+
+  // Email the booker
+  if (booking) {
+    const { data: profile } = await supabase
+      .from('profiles').select('email, full_name').eq('id', booking.user_id).single()
+    if (profile?.email) {
+      const firstName = profile.full_name?.split(' ')[0] || 'there'
+      await sendBookingDenied(profile.email, firstName, booking.start_date, booking.end_date)
+    }
+  }
 
   redirect('/dashboard/trips')
 }

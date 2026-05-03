@@ -4,6 +4,18 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { Resend } from 'resend'
+import { sendNewSignupAlert } from '@/lib/email'
+
+export async function notifyAdminsOfSignup(name: string, email: string) {
+  const supabase = await createClient()
+  const { data: admins } = await supabase
+    .from('profiles')
+    .select('email')
+    .eq('is_admin', true)
+    .eq('is_active', true)
+  const adminEmails = (admins ?? []).map(a => a.email).filter(Boolean) as string[]
+  await sendNewSignupAlert(adminEmails, name, email)
+}
 
 export async function activateUser(userId: string) {
   const supabase = await createClient()
