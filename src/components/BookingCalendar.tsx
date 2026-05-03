@@ -49,7 +49,7 @@ function getName(b: Booking): string {
 }
 
 function initials(name: string) {
-  return name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
+  return (name.trim()[0] ?? '?').toUpperCase()
 }
 
 function formatDateRange(start: string, end: string) {
