@@ -20,7 +20,7 @@ export default async function SuppliesPage() {
   return (
     <div>
       <h2 className="text-xl font-semibold text-gray-900 mb-1">🛒 Supply List</h2>
-      <p className="text-sm text-gray-500 mb-6">Things we need at the farm. Grab a few before your next visit!</p>
+      <p className="text-sm text-gray-500 mb-6">Grab a few things before your visit!</p>
       <SuppliesList
         items={items ?? []}
         currentUserId={user.id}
