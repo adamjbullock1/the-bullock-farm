@@ -432,7 +432,7 @@ export default function BookingCalendar({ bookings: initialBookings, currentUser
                 {bookForId === 'guest' && <input type="hidden" name="guest_name" value={guestName} />}
 
                 {/* Admin: book for selector */}
-                {isAdmin && members.length > 0 && (
+                {isAdmin && (
                   <div>
                     <label className="block text-xs text-gray-500 mb-1">Booking for</label>
                     <div className="relative">
