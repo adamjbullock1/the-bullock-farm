@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback, useRef, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { deleteBooking } from '@/app/actions/bookings'
 
 type Profile = { full_name: string | null; email?: string | null; phone?: string | null }
@@ -11,6 +12,8 @@ type Booking = {
   end_date: string
   status: 'pending' | 'approved' | 'denied'
   user_id: string
+  guest_name?: string | null
+  note?: string | null
   profiles?: Profile | Profile[] | null
 }
 
@@ -41,6 +44,7 @@ function getProfile(b: Booking): Profile {
 }
 
 function getName(b: Booking): string {
+  if (b.guest_name) return b.guest_name
   return getProfile(b).full_name || 'A family member'
 }
 
@@ -160,8 +164,14 @@ export default function BookingCalendar({ bookings: initialBookings, currentUser
   const today = new Date()
   const todayStr = toDateStr(today)
 
+  const router = useRouter()
   const [bookings, setBookings] = useState(initialBookings)
+
+  // Sync when server re-fetches after router.refresh()
+  useEffect(() => { setBookings(initialBookings) }, [initialBookings])
   const [bookForId, setBookForId] = useState<string>(currentUserId)
+  const [guestName, setGuestName] = useState('')
+  const [note, setNote] = useState('')
   const [year, setYear] = useState(today.getFullYear())
   const [month, setMonth] = useState(today.getMonth())
   const [selectStart, setSelectStart] = useState<string | null>(null)
@@ -407,7 +417,8 @@ export default function BookingCalendar({ bookings: initialBookings, currentUser
                   const fd = new FormData(e.currentTarget)
                   const res = await fetch('/api/bookings', { method: 'POST', body: fd })
                   if (res.ok) {
-                    setSubmitted(true); setSelectStart(null); setSelectEnd(null)
+                    setSubmitted(true); setSelectStart(null); setSelectEnd(null); setNote('')
+                    router.refresh()
                   } else {
                     const data = await res.json()
                     setError(data.error || 'Something went wrong.')
@@ -417,7 +428,8 @@ export default function BookingCalendar({ bookings: initialBookings, currentUser
               >
                 <input type="hidden" name="start_date" value={rangeStart} />
                 <input type="hidden" name="end_date" value={rangeEnd} />
-                <input type="hidden" name="user_id" value={bookForId} />
+                <input type="hidden" name="user_id" value={bookForId === 'guest' ? currentUserId : bookForId} />
+                {bookForId === 'guest' && <input type="hidden" name="guest_name" value={guestName} />}
 
                 {/* Admin: book for selector */}
                 {isAdmin && members.length > 0 && (
@@ -426,7 +438,7 @@ export default function BookingCalendar({ bookings: initialBookings, currentUser
                     <div className="relative">
                       <select
                         value={bookForId}
-                        onChange={e => setBookForId(e.target.value)}
+                        onChange={e => { setBookForId(e.target.value); setGuestName('') }}
                         className="w-full appearance-none border border-gray-200 rounded-xl pl-3 pr-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 bg-white"
                       >
                         {members.map(m => (
@@ -434,6 +446,7 @@ export default function BookingCalendar({ bookings: initialBookings, currentUser
                             {m.full_name || '(No name)'}{m.id === currentUserId ? ' (you)' : ''}
                           </option>
                         ))}
+                        <option value="guest">Guest (not registered)…</option>
                       </select>
                       <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
@@ -441,8 +454,27 @@ export default function BookingCalendar({ bookings: initialBookings, currentUser
                         </svg>
                       </div>
                     </div>
+                    {bookForId === 'guest' && (
+                      <input
+                        value={guestName}
+                        onChange={e => setGuestName(e.target.value)}
+                        placeholder="Guest's full name"
+                        required
+                        autoFocus
+                        className="mt-2 w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                      />
+                    )}
                   </div>
                 )}
+
+                <textarea
+                  name="note"
+                  value={note}
+                  onChange={e => setNote(e.target.value)}
+                  placeholder="Add a note… e.g. Coming to mow"
+                  rows={2}
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-gray-900 placeholder:text-gray-300"
+                />
 
                 <div className="flex items-center gap-3">
                   <div className="flex-1 text-sm text-gray-700 font-medium">
@@ -484,6 +516,7 @@ export default function BookingCalendar({ bookings: initialBookings, currentUser
                 const name = getName(b)
                 const isMe = b.user_id === currentUserId
                 const canDelete = isMe || isAdmin
+                const bookerFirstName = getProfile(b).full_name?.split(' ')[0] ?? null
                 return (
                   <div key={b.id} className="flex items-center gap-3 px-5 py-3.5">
                     <div className={`w-8 h-8 rounded-full ${userColor(b.user_id).avatar} flex items-center justify-center text-white text-xs font-bold shrink-0`}>
@@ -491,11 +524,18 @@ export default function BookingCalendar({ bookings: initialBookings, currentUser
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-900">
-                        {name}{isMe && <span className="text-gray-400 font-normal"> (you)</span>}
+                        {name}
+                        {b.guest_name && bookerFirstName && (
+                          <span className="text-gray-400 font-normal"> (booked by {isMe ? 'you' : bookerFirstName})</span>
+                        )}
+                        {!b.guest_name && isMe && <span className="text-gray-400 font-normal"> (you)</span>}
                       </p>
                       <p className="text-xs text-gray-500 mt-0.5">
                         {formatDateRange(b.start_date, b.end_date)} · {nightCount(b.start_date, b.end_date)}
                       </p>
+                      {b.note && (
+                        <p className="text-xs text-gray-400 mt-0.5">{b.note}</p>
+                      )}
                     </div>
                     {canDelete && (
                       <StayMenu
@@ -531,9 +571,10 @@ export default function BookingCalendar({ bookings: initialBookings, currentUser
             <div className="bg-gray-900 text-white text-xs rounded-xl px-3.5 py-2.5 shadow-xl space-y-0.5 min-w-[160px]">
               <p className="font-semibold text-sm">{name}</p>
               <p className="text-gray-300">{formatDateRange(tooltip.booking.start_date, tooltip.booking.end_date)}</p>
+              {tooltip.booking.note && <p className="text-gray-300 mt-0.5">{tooltip.booking.note}</p>}
               {p.email && <p className="text-gray-400">{p.email}</p>}
               {p.phone && <p className="text-gray-400">{p.phone}</p>}
-              {!p.email && !p.phone && <p className="text-gray-500 italic">No contact info</p>}
+              {!p.email && !p.phone && !tooltip.booking.note && <p className="text-gray-500 italic">No contact info</p>}
               {/* Arrow */}
               <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-900" />
             </div>

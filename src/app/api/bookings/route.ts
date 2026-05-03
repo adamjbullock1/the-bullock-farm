@@ -43,8 +43,10 @@ export async function POST(request: Request) {
 
   const status = profile?.is_admin ? 'approved' : 'pending'
 
-  // Admins can book on behalf of another user
+  // Admins can book on behalf of another user or a guest
   const requestedUserId = formData.get('user_id') as string | null
+  const guestName = (formData.get('guest_name') as string | null)?.trim() || null
+  const noteVal = (formData.get('note') as string | null)?.trim() || null
   const bookingUserId = (profile?.is_admin && requestedUserId) ? requestedUserId : user.id
 
   const { error } = await supabase.from('bookings').insert({
@@ -52,6 +54,8 @@ export async function POST(request: Request) {
     start_date,
     end_date,
     status,
+    ...(guestName ? { guest_name: guestName } : {}),
+    ...(noteVal ? { note: noteVal } : {}),
   })
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })

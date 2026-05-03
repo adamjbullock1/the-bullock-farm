@@ -8,7 +8,7 @@ export default async function TripsPage() {
 
   const { data: pendingBookings, error } = await supabase
     .from('bookings')
-    .select('id, start_date, end_date, status, created_at, user_id, profiles!bookings_user_id_fkey(full_name, email)')
+    .select('id, start_date, end_date, status, created_at, user_id, guest_name, note, profiles!bookings_user_id_fkey(full_name, email)')
     .eq('status', 'pending')
     .order('start_date', { ascending: true })
 
@@ -36,6 +36,7 @@ export default async function TripsPage() {
       <div className="space-y-4">
         {pendingBookings.map(b => {
           const profile = Array.isArray(b.profiles) ? b.profiles[0] : b.profiles
+          const displayName = b.guest_name || profile?.full_name || 'A family member'
           const start = new Date(b.start_date + 'T00:00:00').toLocaleDateString('en-US', {
             weekday: 'long', month: 'long', day: 'numeric',
           })
@@ -51,12 +52,15 @@ export default async function TripsPage() {
               <div className="flex items-start justify-between gap-4 flex-wrap">
                 <div>
                   <p className="font-semibold text-gray-900 text-base">
-                    {profile?.full_name || 'A family member'} wants to visit
+                    {displayName} wants to visit
                   </p>
                   <div className="mt-2 space-y-0.5">
                     <p className="text-gray-600 text-sm">🗓 {start}</p>
                     <p className="text-gray-600 text-sm">🏁 {end}</p>
                     <p className="text-gray-400 text-xs mt-1">{nights} night{nights !== 1 ? 's' : ''}</p>
+                    {b.note && (
+                      <p className="text-xs text-gray-400 mt-1.5">{b.note}</p>
+                    )}
                   </div>
                 </div>
                 <div className="flex flex-col gap-2 min-w-[140px]">

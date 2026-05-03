@@ -13,7 +13,7 @@ export default async function DashboardPage() {
   const [{ data: bookings }, { data: profile }, { data: members }] = await Promise.all([
     supabase
       .from('bookings')
-      .select('id, start_date, end_date, status, user_id, profiles!bookings_user_id_fkey(full_name, email, phone)')
+      .select('id, start_date, end_date, status, user_id, guest_name, note, profiles!bookings_user_id_fkey(full_name, email, phone)')
       .in('status', ['approved', 'pending'])
       .order('start_date', { ascending: true }),
     supabase.from('profiles').select('is_admin').eq('id', user.id).single(),
