@@ -561,8 +561,10 @@ export default function BookingCalendar({ bookings: initialBookings, currentUser
 
       {/* Hover tooltip */}
       {tooltip && (() => {
-        const p = getProfile(tooltip.booking)
-        const name = p.full_name || 'A family member'
+        const b = tooltip.booking
+        const isGuest = !!b.guest_name
+        const p = getProfile(b)
+        const name = isGuest ? b.guest_name! : (p.full_name || 'A family member')
         return (
           <div
             className="fixed z-50 pointer-events-none"
@@ -570,11 +572,11 @@ export default function BookingCalendar({ bookings: initialBookings, currentUser
           >
             <div className="bg-gray-900 text-white text-xs rounded-xl px-3.5 py-2.5 shadow-xl space-y-0.5 min-w-[160px]">
               <p className="font-semibold text-sm">{name}</p>
-              <p className="text-gray-300">{formatDateRange(tooltip.booking.start_date, tooltip.booking.end_date)}</p>
-              {tooltip.booking.note && <p className="text-gray-300 mt-0.5">{tooltip.booking.note}</p>}
-              {p.email && <p className="text-gray-400">{p.email}</p>}
-              {p.phone && <p className="text-gray-400">{p.phone}</p>}
-              {!p.email && !p.phone && !tooltip.booking.note && <p className="text-gray-500 italic">No contact info</p>}
+              <p className="text-gray-300">{formatDateRange(b.start_date, b.end_date)}</p>
+              {b.note && <p className="text-gray-300 mt-0.5">{b.note}</p>}
+              {!isGuest && p.email && <p className="text-gray-400">{p.email}</p>}
+              {!isGuest && p.phone && <p className="text-gray-400">{p.phone}</p>}
+              {!isGuest && !p.email && !p.phone && !b.note && <p className="text-gray-500 italic">No contact info</p>}
               {/* Arrow */}
               <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-900" />
             </div>
