@@ -390,7 +390,7 @@ export default function BookingCalendar({ bookings: initialBookings, currentUser
         </div>
 
         {/* Request bar */}
-        <div className="border-t border-gray-100 px-6 pb-5 pt-4">
+        {(rangeStart && rangeEnd) || error || submitted ? <div className="border-t border-gray-100 px-6 pb-5 pt-4">
             {error && (
               <p className="text-sm text-red-600 bg-red-50 px-4 py-3 rounded-xl mb-3">{error}</p>
             )}
@@ -454,7 +454,7 @@ export default function BookingCalendar({ bookings: initialBookings, currentUser
                   <button
                     type="button"
                     onClick={() => { setSelectStart(null); setSelectEnd(null); setError('') }}
-                    className="text-sm text-gray-400 hover:text-gray-700 transition px-2"
+                    className="text-sm text-gray-500 hover:text-gray-900 transition px-2"
                   >
                     Clear
                   </button>
@@ -462,12 +462,12 @@ export default function BookingCalendar({ bookings: initialBookings, currentUser
                     type="submit"
                     className="bg-blue-600 text-white text-sm font-medium px-5 py-2.5 rounded-xl hover:bg-blue-700 transition whitespace-nowrap"
                   >
-                    {isAdmin ? 'Reserve' : 'Request Stay'}
+                    {isAdmin ? 'Reserve' : 'Request'}
                   </button>
                 </div>
               </form>
             ) : null}
-        </div>
+        </div> : null}
       </div>
 
       {/* Upcoming stays */}
