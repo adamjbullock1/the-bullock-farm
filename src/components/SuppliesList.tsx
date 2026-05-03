@@ -241,7 +241,7 @@ export default function SuppliesList({ items: initial, currentUserId, isAdmin }:
           <div className="px-5 py-10 text-center">
             <p className="text-2xl mb-2">✅</p>
             <p className="text-sm font-medium text-gray-700">All stocked up!</p>
-            <p className="text-xs text-gray-400 mt-1">Add items when supplies run low.</p>
+            <p className="text-xs text-gray-400 mt-1">Add items to the shopping list.</p>
           </div>
         ) : (
           <>

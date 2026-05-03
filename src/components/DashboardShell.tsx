@@ -17,7 +17,7 @@ const links = [
   { href: '/dashboard',          label: 'Calendar',       icon: '🏡', adminOnly: false },
   { href: '/dashboard/trips',    label: 'Stay Requests',  icon: '📅', adminOnly: true  },
   { href: '/dashboard/family',   label: 'Family Members', icon: '👨‍👩‍👧‍👦', adminOnly: false },
-  { href: '/dashboard/supplies', label: 'Supply List',    icon: '🛒', adminOnly: false },
+  { href: '/dashboard/supplies', label: 'Shopping List',  icon: '🛒', adminOnly: false },
   { href: '/dashboard/guide',    label: 'Farm Guide',     icon: '📖', adminOnly: false },
 ]
 
