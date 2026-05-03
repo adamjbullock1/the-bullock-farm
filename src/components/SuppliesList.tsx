@@ -291,7 +291,7 @@ export default function SuppliesList({ items: initial, currentUserId, isAdmin }:
                       onClick={() => toggleSelect(item.id)}
                     />
                     <div className="flex-1 min-w-0 cursor-pointer" onClick={() => toggleSelect(item.id)}>
-                      <p className={`text-sm font-medium transition ${isChecked ? 'text-green-700 line-through' : 'text-gray-900'}`}>{item.name}</p>
+                      <p className={`text-sm font-medium transition ${isChecked ? 'text-green-700' : 'text-gray-900'}`}>{item.name}</p>
                       {item.note && <p className="text-xs text-gray-400 mt-0.5">{item.note}</p>}
                     </div>
                     {canEdit && (
