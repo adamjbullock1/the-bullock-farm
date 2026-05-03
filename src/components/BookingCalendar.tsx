@@ -180,8 +180,6 @@ export default function BookingCalendar({ bookings: initialBookings, currentUser
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
   const [tooltip, setTooltip] = useState<{ booking: Booking; x: number; y: number } | null>(null)
-  const [daysShown, setDaysShown] = useState(45)
-
   const approvedBookings = bookings.filter(b => b.status === 'approved')
   const pendingBookings  = bookings.filter(b => b.status === 'pending')
 
@@ -189,9 +187,7 @@ export default function BookingCalendar({ bookings: initialBookings, currentUser
     .filter(b => b.end_date >= todayStr)
     .sort((a, b) => a.start_date.localeCompare(b.start_date))
 
-  const cutoff = toDateStr(new Date(today.getFullYear(), today.getMonth(), today.getDate() + daysShown))
-  const upcomingStays = allUpcomingStays.filter(b => b.start_date <= cutoff)
-  const hasMore = allUpcomingStays.some(b => b.start_date > cutoff)
+  const upcomingStays = allUpcomingStays
 
   const currentStays = approvedBookings.filter(
     b => b.start_date <= todayStr && b.end_date >= todayStr
@@ -548,14 +544,6 @@ export default function BookingCalendar({ bookings: initialBookings, currentUser
               })
             )}
           </div>
-          {hasMore && (
-            <button
-              onClick={() => setDaysShown(d => d + 90)}
-              className="w-full py-3.5 text-sm font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-50 border-t border-gray-100 transition text-center"
-            >
-              Show more
-            </button>
-          )}
         </div>
       )}
 
