@@ -21,10 +21,24 @@ function nightCount(start: string, end: string) {
 
 function base(body: string) {
   return `
+    <html x-apple-data-detectors="false">
+    <head>
+      <meta name="x-apple-disable-message-reformatting">
+      <style>
+        a[x-apple-data-detectors] {
+          color: inherit !important;
+          text-decoration: none !important;
+        }
+        * { -webkit-text-size-adjust: none; }
+      </style>
+    </head>
+    <body>
     <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; color: #111;">
       ${body}
       <p style="margin-top: 32px; font-size: 13px; color: #aaa;">The Bullock Farm · thebullockfarm.com</p>
     </div>
+    </body>
+    </html>
   `
 }
 
@@ -42,7 +56,7 @@ export async function sendNewSignupAlert(adminEmails: string[], name: string, em
     html: base(`
       <h2 style="font-size:22px;margin-bottom:8px;">New access request 🏡</h2>
       <p style="color:#555;font-size:15px;line-height:1.6;">
-        <strong>${name || '(No name)'}</strong> (${email}) just signed up and is waiting to be let in.
+        <strong>${name || '(No name)'}</strong> (<span style="color:#555;">${email}</span>) just signed up and is waiting to be let in.
       </p>
       ${btn('Review request →', `${BASE_URL}/dashboard/family`)}
     `),
