@@ -190,8 +190,9 @@ export default function BookingCalendar({ bookings: initialBookings, currentUser
     pendingBookings.some(b => d >= b.start_date && d < b.end_date), [pendingBookings])
 
   const isInSelection = useCallback((d: string) => {
-    const cursor = selectEnd || hoverDate
-    if (!selectStart || !cursor) return false
+    if (!selectStart) return false
+    const fallback = toDateStr(new Date(parseLocal(selectStart).getTime() + 86400000))
+    const cursor = selectEnd || hoverDate || fallback
     const lo = selectStart < cursor ? selectStart : cursor
     const hi = selectStart < cursor ? cursor : selectStart
     return d >= lo && d <= hi
@@ -360,6 +361,7 @@ export default function BookingCalendar({ bookings: initialBookings, currentUser
                   className={`relative flex items-center justify-center h-10 text-sm select-none transition ${bg} ${textColor} ${cursor} ${rounded}`}
                   onClick={() => !isPast && handleDayClick(dateStr)}
                   onMouseEnter={(e) => {
+                    if (e.sourceCapabilities?.firesTouchEvents) return
                     if (approved && approvedB) {
                       const rect = e.currentTarget.getBoundingClientRect()
                       setTooltip({ booking: approvedB, x: rect.left + rect.width / 2, y: rect.top })
@@ -368,7 +370,10 @@ export default function BookingCalendar({ bookings: initialBookings, currentUser
                     }
                     if (selectStart && !selectEnd) setHoverDate(dateStr)
                   }}
-                  onMouseLeave={() => setHoverDate(null)}
+                  onMouseLeave={(e) => {
+                    if (e.sourceCapabilities?.firesTouchEvents) return
+                    setHoverDate(null)
+                  }}
                 >
                   {isToday && !inSel && !isStart && !isEnd && !approved && (
                     <span className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-blue-500 pointer-events-none" />
