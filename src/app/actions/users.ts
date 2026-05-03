@@ -1,13 +1,13 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { Resend } from 'resend'
 import { sendNewSignupAlert } from '@/lib/email'
 
 export async function notifyAdminsOfSignup(name: string, email: string) {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
   const { data: admins } = await supabase
     .from('profiles')
     .select('email')
