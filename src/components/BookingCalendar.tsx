@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { deleteBooking } from '@/app/actions/bookings'
+import { deleteBooking, updateBooking } from '@/app/actions/bookings'
 
 type Profile = { full_name: string | null; email?: string | null; phone?: string | null }
 
@@ -87,7 +87,7 @@ function userColor(userId: string) {
   return PALETTE[h % PALETTE.length]
 }
 
-function StayMenu({ bookingId, onDeleted }: { bookingId: string; onDeleted: () => void }) {
+function StayMenu({ bookingId, onDeleted, onEdit }: { bookingId: string; onDeleted: () => void; onEdit: () => void }) {
   const [open, setOpen] = useState(false)
   const [confirm, setConfirm] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -131,7 +131,7 @@ function StayMenu({ bookingId, onDeleted }: { bookingId: string; onDeleted: () =
         <div className="absolute right-0 bottom-8 z-20 w-44 bg-white rounded-2xl shadow-lg border border-gray-100 py-1.5 text-sm">
           {confirm ? (
             <div className="px-3 py-2">
-              <p className="text-xs text-gray-500 mb-2">Delete?</p>
+              <p className="text-xs text-gray-500 mb-2">Delete this stay?</p>
               {err && <p className="text-xs text-red-500 mb-2">{err}</p>}
               <div className="flex gap-2">
                 <button
@@ -147,12 +147,20 @@ function StayMenu({ bookingId, onDeleted }: { bookingId: string; onDeleted: () =
               </div>
             </div>
           ) : (
-            <button
-              onClick={() => setConfirm(true)}
-              className="w-full text-left px-4 py-2.5 hover:bg-red-50 text-red-500 transition"
-            >
-              🗑 Delete Stay
-            </button>
+            <>
+              <button
+                onClick={() => { setOpen(false); onEdit() }}
+                className="w-full text-left px-4 py-2.5 hover:bg-gray-50 text-gray-700 transition"
+              >
+                ✏️ Edit Stay
+              </button>
+              <button
+                onClick={() => setConfirm(true)}
+                className="w-full text-left px-4 py-2.5 hover:bg-red-50 text-red-500 transition"
+              >
+                🗑 Delete Stay
+              </button>
+            </>
           )}
         </div>
       )}
@@ -179,6 +187,12 @@ export default function BookingCalendar({ bookings: initialBookings, currentUser
   const [hoverDate, setHoverDate] = useState<string | null>(null)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editStart, setEditStart] = useState('')
+  const [editEnd, setEditEnd] = useState('')
+  const [editNote, setEditNote] = useState('')
+  const [editError, setEditError] = useState('')
+  const [editLoading, setEditLoading] = useState(false)
   const [tooltip, setTooltip] = useState<{ booking: Booking; x: number; y: number } | null>(null)
   const approvedBookings = bookings.filter(b => b.status === 'approved')
   const pendingBookings  = bookings.filter(b => b.status === 'pending')
@@ -505,14 +519,81 @@ export default function BookingCalendar({ bookings: initialBookings, currentUser
             <h3 className="font-semibold text-gray-900 text-sm">Upcoming Stays</h3>
           </div>
           <div className="divide-y divide-gray-50">
-            {upcomingStays.length === 0 ? (
-              <p className="px-5 py-4 text-sm text-gray-400">No stays booked in the next {daysShown} days.</p>
-            ) : (
-              upcomingStays.map(b => {
+            {upcomingStays.map(b => {
                 const name = getName(b)
                 const isMe = b.user_id === currentUserId
-                const canDelete = isMe || isAdmin
+                const canEdit = isMe || isAdmin
                 const bookerFirstName = getProfile(b).full_name?.split(' ')[0] ?? null
+                const isEditing = editingId === b.id
+
+                if (isEditing) {
+                  return (
+                    <div key={b.id} className="px-5 py-4 border-b border-gray-50 last:border-0">
+                      <p className="text-xs font-medium text-gray-500 mb-3">Edit Stay</p>
+                      {editError && <p className="text-xs text-red-500 mb-2">{editError}</p>}
+                      <div className="space-y-2">
+                        <div className="flex gap-2">
+                          <div className="flex-1">
+                            <label className="block text-xs text-gray-400 mb-1">Check-in</label>
+                            <input
+                              type="date"
+                              value={editStart}
+                              onChange={e => setEditStart(e.target.value)}
+                              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <label className="block text-xs text-gray-400 mb-1">Check-out</label>
+                            <input
+                              type="date"
+                              value={editEnd}
+                              onChange={e => setEditEnd(e.target.value)}
+                              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                            />
+                          </div>
+                        </div>
+                        <input
+                          type="text"
+                          value={editNote}
+                          onChange={e => setEditNote(e.target.value)}
+                          placeholder="Note (optional)"
+                          className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                        />
+                        <div className="flex gap-2 pt-1">
+                          <button
+                            onClick={async () => {
+                              setEditLoading(true)
+                              setEditError('')
+                              const result = await updateBooking(b.id, { start_date: editStart, end_date: editEnd, note: editNote })
+                              if (result?.error) {
+                                setEditError(result.error)
+                                setEditLoading(false)
+                              } else {
+                                setBookings(prev => prev.map(x => x.id === b.id
+                                  ? { ...x, start_date: editStart, end_date: editEnd, note: editNote || null }
+                                  : x
+                                ))
+                                setEditingId(null)
+                                setEditLoading(false)
+                              }
+                            }}
+                            disabled={editLoading}
+                            className="flex-1 bg-gray-900 text-white text-xs font-medium py-2 rounded-xl hover:bg-gray-700 transition disabled:opacity-50"
+                          >
+                            {editLoading ? 'Saving…' : 'Save'}
+                          </button>
+                          <button
+                            onClick={() => { setEditingId(null); setEditError('') }}
+                            className="flex-1 border border-gray-200 text-gray-500 text-xs font-medium py-2 rounded-xl hover:bg-gray-50 transition"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                }
+
                 return (
                   <div key={b.id} className="flex items-center gap-3 px-5 py-3.5">
                     <div className={`w-8 h-8 rounded-full ${userColor(b.user_id).avatar} flex items-center justify-center text-white text-xs font-bold shrink-0`}>
@@ -533,16 +614,22 @@ export default function BookingCalendar({ bookings: initialBookings, currentUser
                         <p className="text-xs text-gray-400 mt-0.5">{b.note}</p>
                       )}
                     </div>
-                    {canDelete && (
+                    {canEdit && (
                       <StayMenu
                         bookingId={b.id}
                         onDeleted={() => setBookings(prev => prev.filter(x => x.id !== b.id))}
+                        onEdit={() => {
+                          setEditingId(b.id)
+                          setEditStart(b.start_date)
+                          setEditEnd(b.end_date)
+                          setEditNote(b.note ?? '')
+                          setEditError('')
+                        }}
                       />
                     )}
                   </div>
                 )
-              })
-            )}
+              })}
           </div>
         </div>
       )}
