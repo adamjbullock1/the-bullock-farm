@@ -25,32 +25,33 @@ export default function SignupPage() {
     setLoading(true)
     setError('')
 
-    const supabase = createClient()
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { full_name: fullName, phone } },
-    })
+    try {
+      const supabase = createClient()
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { full_name: fullName, phone } },
+      })
 
-    if (error) {
-      setError(error.message)
+      if (error) {
+        setError(error.message)
+        setLoading(false)
+        return
+      }
+
+      // Save phone to profile (trigger already handles full_name)
+      if (data.user) {
+        await supabase.from('profiles').update({ phone }).eq('id', data.user.id)
+      }
+
+      // Notify admins — fire and forget so it never blocks the redirect
+      notifyAdminsOfSignup(fullName, email).catch(() => {})
+
+      window.location.href = '/pending'
+    } catch {
+      setError('Something went wrong. Please try again.')
       setLoading(false)
-      return
     }
-
-    if (!data.session) {
-      setError('Account created but email confirmation is still required. Please disable it in Supabase → Auth → Providers → Email.')
-      setLoading(false)
-      return
-    }
-
-    // Save phone to profile (trigger already handles full_name)
-    await supabase.from('profiles').update({ phone }).eq('id', data.user!.id)
-
-    // Notify admins of new signup
-    await notifyAdminsOfSignup(fullName, email)
-
-    window.location.href = '/pending'
   }
 
   return (
