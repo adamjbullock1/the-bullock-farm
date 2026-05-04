@@ -529,6 +529,21 @@ export default function BookingCalendar({ bookings: initialBookings, currentUser
                 if (isEditing) {
                   return (
                     <div key={b.id} className="px-5 py-4 border-b border-gray-50 last:border-0">
+                      {/* Name row */}
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className={`w-8 h-8 rounded-full ${userColor(b.user_id).avatar} flex items-center justify-center text-white text-xs font-bold shrink-0`}>
+                          {initials(name)}
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">
+                            {name}
+                            {b.guest_name && bookerFirstName && (
+                              <span className="text-gray-400 font-normal"> (booked by {isMe ? 'you' : bookerFirstName})</span>
+                            )}
+                            {!b.guest_name && isMe && <span className="text-gray-400 font-normal"> (you)</span>}
+                          </p>
+                        </div>
+                      </div>
                       <p className="text-xs font-medium text-gray-500 mb-3">Edit Stay</p>
                       {editError && <p className="text-xs text-red-500 mb-2">{editError}</p>}
                       <div className="space-y-2">
