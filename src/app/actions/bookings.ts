@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { sendBookingApproved, sendBookingDenied } from '@/lib/email'
@@ -53,9 +53,10 @@ export async function approveBooking(bookingId: string) {
     .update({ status: 'approved', processed_by: user.id })
     .eq('id', bookingId)
 
-  // Email the booker
+  // Email the booker — use admin client to bypass RLS on another user's profile
   if (booking) {
-    const { data: profile } = await supabase
+    const admin = createAdminClient()
+    const { data: profile } = await admin
       .from('profiles').select('email, full_name').eq('id', booking.user_id).single()
     if (profile?.email) {
       const firstName = profile.full_name?.split(' ')[0] || 'there'
@@ -104,9 +105,10 @@ export async function denyBooking(bookingId: string) {
     .update({ status: 'denied', processed_by: user.id })
     .eq('id', bookingId)
 
-  // Email the booker
+  // Email the booker — use admin client to bypass RLS on another user's profile
   if (booking) {
-    const { data: profile } = await supabase
+    const admin = createAdminClient()
+    const { data: profile } = await admin
       .from('profiles').select('email, full_name').eq('id', booking.user_id).single()
     if (profile?.email) {
       const firstName = profile.full_name?.split(' ')[0] || 'there'
