@@ -538,7 +538,7 @@ export default function BookingCalendar({ bookings: initialBookings, currentUser
                           <p className="text-sm font-medium text-gray-900">
                             {name}
                             {b.guest_name && bookerFirstName && (
-                              <span className="text-gray-400 font-normal"> (booked by {isMe ? 'you' : bookerFirstName})</span>
+                              <span className="text-gray-400 font-normal"> (added by {isMe ? 'you' : bookerFirstName})</span>
                             )}
                             {!b.guest_name && isMe && <span className="text-gray-400 font-normal"> (you)</span>}
                           </p>
@@ -618,7 +618,7 @@ export default function BookingCalendar({ bookings: initialBookings, currentUser
                       <p className="text-sm font-medium text-gray-900">
                         {name}
                         {b.guest_name && bookerFirstName && (
-                          <span className="text-gray-400 font-normal"> (booked by {isMe ? 'you' : bookerFirstName})</span>
+                          <span className="text-gray-400 font-normal"> (added by {isMe ? 'you' : bookerFirstName})</span>
                         )}
                         {!b.guest_name && isMe && <span className="text-gray-400 font-normal"> (you)</span>}
                       </p>
