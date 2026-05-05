@@ -70,6 +70,7 @@ export default async function FamilyMembersPage() {
         {!isAdmin && (
           <p className="text-sm text-gray-500 mb-4">Everyone who has access to the farm portal.</p>
         )}
+        {isAdmin && <div className="mb-4" />}
 
         {!members || members.length === 0 ? (
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-12 text-center">
