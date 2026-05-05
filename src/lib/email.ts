@@ -7,18 +7,6 @@ function resend() {
   return new Resend(process.env.RESEND_API_KEY!)
 }
 
-function formatDate(dateStr: string) {
-  const [y, m, d] = dateStr.split('-').map(Number)
-  return new Date(y, m - 1, d).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-}
-
-function nightCount(start: string, end: string) {
-  const [y1, m1, d1] = start.split('-').map(Number)
-  const [y2, m2, d2] = end.split('-').map(Number)
-  const n = Math.round((new Date(y2, m2 - 1, d2).getTime() - new Date(y1, m1 - 1, d1).getTime()) / 86400000)
-  return `${n} night${n !== 1 ? 's' : ''}`
-}
-
 function base(body: string) {
   return `
     <html x-apple-data-detectors="false">
@@ -63,26 +51,20 @@ export async function sendNewSignupAlert(adminEmails: string[], name: string, em
   })
 }
 
-// ── 2. New booking request → notify all admins ────────────────────────────────
-export async function sendNewBookingAlert(
-  adminEmails: string[],
-  requesterName: string,
-  start: string,
-  end: string,
-) {
-  if (!process.env.RESEND_API_KEY || adminEmails.length === 0) return
+// ── 2. Access approved → notify the new member ────────────────────────────────
+export async function sendWelcomeEmail(toEmail: string, firstName: string) {
+  if (!process.env.RESEND_API_KEY) return
   await resend().emails.send({
     from: FROM,
-    to: adminEmails,
-    subject: `New stay request from ${requesterName}`,
+    to: toEmail,
+    subject: "You're in! Welcome to The Bullock Farm",
     html: base(`
-      <h2 style="font-size:22px;margin-bottom:8px;">New stay request 📅</h2>
+      <h2 style="font-size:22px;margin-bottom:8px;">Hey ${firstName}, you're approved! 🏡</h2>
       <p style="color:#555;font-size:15px;line-height:1.6;">
-        <strong>${requesterName}</strong> has requested a stay:<br/>
-        <strong>${formatDate(start)} – ${formatDate(end)}</strong> · ${nightCount(start, end)}
+        You've been given access to The Bullock Farm portal. You can now view the calendar,
+        reserve dates, and see who else is visiting.
       </p>
-      ${btn('Review trips →', `${BASE_URL}/dashboard/trips`)}
+      ${btn('Go to The Bullock Farm →', `${BASE_URL}/login`)}
     `),
   })
 }
-
