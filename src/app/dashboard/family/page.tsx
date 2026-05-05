@@ -95,7 +95,7 @@ export default async function FamilyMembersPage() {
                           You
                         </span>
                       )}
-                      {u.is_admin && (
+                      {u.is_admin && isAdmin && (
                         <span className="bg-blue-50 text-blue-600 text-xs font-medium px-2 py-0.5 rounded-full border border-blue-100">
                           Admin
                         </span>
