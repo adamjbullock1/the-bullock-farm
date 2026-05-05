@@ -17,9 +17,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   if (!user) redirect('/login')
 
-  const [{ data: profile }, { count: tripCount }, { count: memberCount }] = await Promise.all([
+  const [{ data: profile }, { count: memberCount }] = await Promise.all([
     supabase.from('profiles').select('full_name, is_admin').eq('id', user.id).single(),
-    supabase.from('bookings').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
     supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('is_active', false).neq('id', user.id),
   ])
 
@@ -29,7 +28,6 @@ export default async function DashboardLayout({ children }: { children: React.Re
     <DashboardShell
       firstName={firstName}
       isAdmin={profile?.is_admin ?? false}
-      tripCount={tripCount ?? 0}
       memberCount={profile?.is_admin ? (memberCount ?? 0) : 0}
       signOut={signOut}
     >

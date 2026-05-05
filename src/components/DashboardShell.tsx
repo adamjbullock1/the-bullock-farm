@@ -7,7 +7,6 @@ import { usePathname } from 'next/navigation'
 type Props = {
   firstName: string
   isAdmin: boolean
-  tripCount: number
   memberCount: number
   children: React.ReactNode
   signOut: () => Promise<void>
@@ -15,21 +14,19 @@ type Props = {
 
 const links = [
   { href: '/dashboard',          label: 'Calendar',       icon: '🏡', adminOnly: false },
-  { href: '/dashboard/trips',    label: 'Stay Requests',  icon: '📅', adminOnly: true  },
   { href: '/dashboard/family',   label: 'Family Members', icon: '👨‍👩‍👧‍👦', adminOnly: false },
   { href: '/dashboard/supplies', label: 'Shopping List',  icon: '🛒', adminOnly: false },
   { href: '/dashboard/guide',    label: 'Farm Guide',     icon: '📖', adminOnly: false },
 ]
 
-export default function DashboardShell({ firstName, isAdmin, tripCount, memberCount, children, signOut }: Props) {
+export default function DashboardShell({ firstName, isAdmin, memberCount, children, signOut }: Props) {
   const pathname = usePathname()
   const [menuOpen, setMenuOpen] = useState(false)
 
   const visible = links.filter(l => !l.adminOnly || isAdmin)
-  const totalBadge = tripCount + memberCount
+  const totalBadge = memberCount
 
   function badge(href: string) {
-    if (href === '/dashboard/trips') return tripCount
     if (href === '/dashboard/family') return memberCount
     return 0
   }

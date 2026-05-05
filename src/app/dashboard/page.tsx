@@ -14,7 +14,7 @@ export default async function DashboardPage() {
     supabase
       .from('bookings')
       .select('id, start_date, end_date, status, user_id, guest_name, note, profiles!bookings_user_id_fkey(full_name, email, phone)')
-      .in('status', ['approved', 'pending'])
+      .eq('status', 'approved')
       .order('start_date', { ascending: true }),
     supabase.from('profiles').select('is_admin').eq('id', user.id).single(),
     supabase.from('profiles').select('id, full_name').eq('is_active', true).order('full_name'),

@@ -195,7 +195,6 @@ export default function BookingCalendar({ bookings: initialBookings, currentUser
   const [editLoading, setEditLoading] = useState(false)
   const [tooltip, setTooltip] = useState<{ booking: Booking; x: number; y: number } | null>(null)
   const approvedBookings = bookings.filter(b => b.status === 'approved')
-  const pendingBookings  = bookings.filter(b => b.status === 'pending')
 
   const allUpcomingStays = approvedBookings
     .filter(b => b.end_date >= todayStr)
@@ -210,9 +209,6 @@ export default function BookingCalendar({ bookings: initialBookings, currentUser
   const isApproved = useCallback((d: string) =>
     approvedBookings.some(b => d >= b.start_date && d < b.end_date), [approvedBookings])
 
-  const isPending = useCallback((d: string) =>
-    pendingBookings.some(b => d >= b.start_date && d < b.end_date), [pendingBookings])
-
   const isInSelection = useCallback((d: string) => {
     if (!selectStart) return false
     const fallback = toDateStr(new Date(parseLocal(selectStart).getTime() + 86400000))
@@ -223,7 +219,7 @@ export default function BookingCalendar({ bookings: initialBookings, currentUser
   }, [selectStart, selectEnd, hoverDate])
 
   function handleDayClick(dateStr: string) {
-    if (isApproved(dateStr) || isPending(dateStr)) return
+    if (isApproved(dateStr)) return
     // No start yet, or clicking a new start after a complete range: reset
     if (!selectStart) {
       setSelectStart(dateStr); setSelectEnd(null); setError(''); return
@@ -245,10 +241,6 @@ export default function BookingCalendar({ bookings: initialBookings, currentUser
         const s = toDateStr(d)
         if (isApproved(s)) {
           setError('Your selection overlaps with a booked stay. Please choose different dates.')
-          return
-        }
-        if (isPending(s)) {
-          setError('Your selection overlaps with a pending request. Please choose different dates.')
           return
         }
         d.setDate(d.getDate() + 1)
@@ -329,7 +321,6 @@ export default function BookingCalendar({ bookings: initialBookings, currentUser
               if (!dateStr) return <div key={i} />
 
               const approved  = isApproved(dateStr)
-              const pending   = isPending(dateStr)
               const inSel     = isInSelection(dateStr)
               const isStart   = dateStr === rangeStart
               const isEnd     = dateStr === rangeEnd
@@ -368,10 +359,6 @@ export default function BookingCalendar({ bookings: initialBookings, currentUser
                         : leftRound  ? 'rounded-l-xl rounded-r-none'
                         : rightRound ? 'rounded-r-xl rounded-l-none'
                         : 'rounded-none'
-              } else if (pending) {
-                bg = 'bg-amber-50'
-                textColor = 'text-amber-600'
-                rounded = 'rounded-xl'
               } else if (isPast) {
                 textColor = 'text-gray-300'
                 cursor = 'cursor-not-allowed'
@@ -416,7 +403,7 @@ export default function BookingCalendar({ bookings: initialBookings, currentUser
             )}
             {submitted && (
               <p className="text-sm text-green-700 bg-green-50 px-4 py-3 rounded-xl mb-3">
-                {isAdmin ? "✓ You're booked!" : '✓ Stay requested! An admin will review it shortly.'}
+                {"✓ You're booked!"}
               </p>
             )}
 
@@ -504,7 +491,7 @@ export default function BookingCalendar({ bookings: initialBookings, currentUser
                     type="submit"
                     className="bg-blue-600 text-white text-sm font-medium px-5 py-2.5 rounded-xl hover:bg-blue-700 transition whitespace-nowrap"
                   >
-                    {isAdmin ? 'Reserve' : 'Request'}
+                    Reserve
                   </button>
                 </div>
               </form>
