@@ -14,9 +14,9 @@ type Props = {
 
 const links = [
   { href: '/dashboard',          label: 'Calendar',       icon: '🏡', adminOnly: false },
-  { href: '/dashboard/family',   label: 'Family Members', icon: '👨‍👩‍👧‍👦', adminOnly: false },
   { href: '/dashboard/supplies', label: 'Shopping List',  icon: '🛒', adminOnly: false },
   { href: '/dashboard/guide',    label: 'Farm Guide',     icon: '📖', adminOnly: false },
+  { href: '/dashboard/family',   label: 'Family Members', icon: '👨‍👩‍👧‍👦', adminOnly: false },
 ]
 
 export default function DashboardShell({ firstName, isAdmin, memberCount, children, signOut }: Props) {
