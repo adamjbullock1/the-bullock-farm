@@ -66,7 +66,7 @@ export async function sendShoppingListReminder(toEmail: string, firstName: strin
       <p style="color:#555;font-size:15px;line-height:1.6;">
         If you've noticed anything that needs restocking or picking up, now's a great time to add it to the shopping list so it's ready for next time.
       </p>
-      ${btn('Open Shopping List →', `${BASE_URL}/dashboard/supply`)}
+      ${btn('Open Shopping List →', `${BASE_URL}/dashboard/supplies`)}
     `),
   })
 }
