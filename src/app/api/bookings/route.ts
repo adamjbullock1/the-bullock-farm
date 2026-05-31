@@ -25,8 +25,8 @@ export async function POST(request: Request) {
     .from('bookings')
     .select('id')
     .eq('status', 'approved')
-    .lt('start_date', end_date)
-    .gt('end_date', start_date)
+    .lte('start_date', end_date)
+    .gte('end_date', start_date)
 
   if (conflicts && conflicts.length > 0) {
     return NextResponse.json({

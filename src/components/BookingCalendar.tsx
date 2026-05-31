@@ -207,7 +207,7 @@ export default function BookingCalendar({ bookings: initialBookings, currentUser
   )
 
   const isApproved = useCallback((d: string) =>
-    approvedBookings.some(b => d >= b.start_date && d < b.end_date), [approvedBookings])
+    approvedBookings.some(b => d >= b.start_date && d <= b.end_date), [approvedBookings])
 
   const isInSelection = useCallback((d: string) => {
     if (!selectStart) return false
@@ -329,9 +329,9 @@ export default function BookingCalendar({ bookings: initialBookings, currentUser
               const dayNum    = parseInt(dateStr.split('-')[2])
 
               // Determine position within a booking span for rounded ends
-              const approvedB = approvedBookings.find(b => dateStr >= b.start_date && dateStr < b.end_date)
+              const approvedB = approvedBookings.find(b => dateStr >= b.start_date && dateStr <= b.end_date)
               const isBookingStart = approvedB?.start_date === dateStr
-              const isBookingEnd   = approvedB ? toDateStr(new Date(parseLocal(approvedB.end_date).getTime() - 86400000)) === dateStr : false
+              const isBookingEnd   = approvedB?.end_date === dateStr
 
               let bg = ''
               let textColor = ''

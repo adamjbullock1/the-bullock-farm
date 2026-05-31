@@ -30,8 +30,8 @@ export async function updateBooking(
     .select('id')
     .eq('status', 'approved')
     .neq('id', bookingId)
-    .lt('start_date', fields.end_date)
-    .gt('end_date', fields.start_date)
+    .lte('start_date', fields.end_date)
+    .gte('end_date', fields.start_date)
 
   if (conflicts && conflicts.length > 0)
     return { error: 'Those dates overlap with another booking.' }

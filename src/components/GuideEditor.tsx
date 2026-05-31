@@ -201,10 +201,7 @@ function SectionEditForm({ section, onDone }: { section: Section; onDone: () => 
 
       {/* Markdown toolbar + textarea + preview */}
       <div>
-        <div className="flex items-center justify-between px-2 py-1.5 border border-gray-200 rounded-t-xl bg-gray-50 border-b-0">
-          <MarkdownToolbar textareaRef={textareaRef} value={body} onChange={setBody} />
-          <span className="text-xs text-gray-400 pr-1 select-none">formatting renders on save</span>
-        </div>
+        <MarkdownToolbar textareaRef={textareaRef} value={body} onChange={setBody} />
         <textarea
           ref={textareaRef}
           name="body"
@@ -215,14 +212,6 @@ function SectionEditForm({ section, onDone }: { section: Section; onDone: () => 
           placeholder="Write tips, instructions, notes… use line breaks to organise."
           className="w-full border border-gray-200 rounded-b-xl px-3 py-2.5 text-sm leading-relaxed resize-y focus:outline-none focus:ring-2 focus:ring-gray-900 placeholder:text-gray-300"
         />
-        {body.trim() && (
-          <div className="mt-2 border border-gray-200 rounded-xl px-3 py-2.5 bg-gray-50">
-            <p className="text-xs text-gray-400 mb-1.5 font-medium uppercase tracking-wide">Preview</p>
-            <div className="text-sm text-gray-700 leading-relaxed space-y-1">
-              {renderMarkdown(body)}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Video URL */}
