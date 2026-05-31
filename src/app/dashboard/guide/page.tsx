@@ -11,7 +11,7 @@ export default async function GuidePage() {
 
   const [{ data: profile }, { data: sections }] = await Promise.all([
     supabase.from('profiles').select('is_admin').eq('id', user.id).single(),
-    supabase.from('guide_sections').select('*, guide_items(*)').order('order_index'),
+    supabase.from('guide_sections').select('id, title, emoji, order_index, body, video_url').order('order_index'),
   ])
 
   if (profile?.is_admin) {

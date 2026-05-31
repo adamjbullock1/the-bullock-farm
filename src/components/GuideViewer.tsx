@@ -1,5 +1,11 @@
-type Item = { id: string; content: string; order_index: number }
-type Section = { id: string; title: string; emoji: string; order_index: number; guide_items: Item[] }
+type Section = {
+  id: string
+  title: string
+  emoji: string
+  order_index: number
+  body?: string | null
+  video_url?: string | null
+}
 
 export default function GuideViewer({ sections }: { sections: Section[] }) {
   if (sections.length === 0) {
@@ -20,21 +26,23 @@ export default function GuideViewer({ sections }: { sections: Section[] }) {
             <span>{section.emoji}</span>
             <h3 className="font-semibold text-gray-900">{section.title}</h3>
           </div>
-          {section.guide_items.length === 0 ? (
-            <p className="px-5 py-4 text-sm text-gray-400 italic">Nothing added yet.</p>
-          ) : (
-            <div className="divide-y divide-gray-50">
-              {section.guide_items
-                .sort((a, b) => a.order_index - b.order_index)
-                .map(item => (
-                  <div key={item.id} className="px-5 py-3">
-                    <p className="text-sm text-gray-700 leading-relaxed">
-                      <span className="text-gray-300 mr-2">—</span>{item.content}
-                    </p>
-                  </div>
-                ))}
-            </div>
-          )}
+          <div className="px-5 py-4 space-y-4">
+            {section.body ? (
+              <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{section.body}</p>
+            ) : (
+              <p className="text-sm text-gray-400 italic">Nothing added yet.</p>
+            )}
+            {section.video_url && (
+              <div className="rounded-xl overflow-hidden aspect-video bg-black">
+                <iframe
+                  src={section.video_url.replace('/view', '/preview').replace(/\?.*$/, '')}
+                  className="w-full h-full"
+                  allow="autoplay"
+                  allowFullScreen
+                />
+              </div>
+            )}
+          </div>
         </div>
       ))}
     </div>
