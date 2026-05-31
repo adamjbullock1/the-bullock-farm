@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { renderMarkdown } from '@/lib/renderMarkdown'
 import { addSection, updateSection, deleteSection } from '@/app/actions/guide'
 
 type Section = {
@@ -134,6 +135,49 @@ function SectionEditForm({ section, onDone }: { section: Section; onDone: () => 
   const [emoji, setEmoji] = useState(section.emoji)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
+  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key !== 'Enter') return
+    const el = e.currentTarget
+    const pos = el.selectionStart
+    const lineStart = body.lastIndexOf('\n', pos - 1) + 1
+    const lineText = body.slice(lineStart, pos)
+
+    const bulletMatch = lineText.match(/^(\s*-\s)/)
+    const numberedMatch = lineText.match(/^(\s*(\d+)\.\s)/)
+
+    if (bulletMatch) {
+      if (lineText.trimEnd() === lineText.trimEnd().match(/^\s*-/)?.[0]) {
+        // empty bullet — strip prefix and exit list
+        e.preventDefault()
+        const newVal = body.slice(0, lineStart) + '\n' + body.slice(pos)
+        setBody(newVal)
+        setTimeout(() => { el.setSelectionRange(lineStart + 1, lineStart + 1) }, 0)
+      } else {
+        e.preventDefault()
+        const prefix = bulletMatch[1]
+        const newVal = body.slice(0, pos) + '\n' + prefix + body.slice(pos)
+        setBody(newVal)
+        setTimeout(() => { el.setSelectionRange(pos + 1 + prefix.length, pos + 1 + prefix.length) }, 0)
+      }
+    } else if (numberedMatch) {
+      if (lineText.trimEnd() === lineText.trimEnd().match(/^\s*\d+\./)?.[0]) {
+        // empty numbered item — strip prefix and exit list
+        e.preventDefault()
+        const newVal = body.slice(0, lineStart) + '\n' + body.slice(pos)
+        setBody(newVal)
+        setTimeout(() => { el.setSelectionRange(lineStart + 1, lineStart + 1) }, 0)
+      } else {
+        e.preventDefault()
+        const nextNum = parseInt(numberedMatch[2]) + 1
+        const indent = lineText.match(/^\s*/)?.[0] ?? ''
+        const prefix = indent + nextNum + '. '
+        const newVal = body.slice(0, pos) + '\n' + prefix + body.slice(pos)
+        setBody(newVal)
+        setTimeout(() => { el.setSelectionRange(pos + 1 + prefix.length, pos + 1 + prefix.length) }, 0)
+      }
+    }
+  }
+
   return (
     <form
       action={async (fd) => {
@@ -155,18 +199,30 @@ function SectionEditForm({ section, onDone }: { section: Section; onDone: () => 
         />
       </div>
 
-      {/* Markdown toolbar + textarea */}
+      {/* Markdown toolbar + textarea + preview */}
       <div>
-        <MarkdownToolbar textareaRef={textareaRef} value={body} onChange={setBody} />
+        <div className="flex items-center justify-between px-2 py-1.5 border border-gray-200 rounded-t-xl bg-gray-50 border-b-0">
+          <MarkdownToolbar textareaRef={textareaRef} value={body} onChange={setBody} />
+          <span className="text-xs text-gray-400 pr-1 select-none">formatting renders on save</span>
+        </div>
         <textarea
           ref={textareaRef}
           name="body"
           value={body}
           onChange={e => setBody(e.target.value)}
+          onKeyDown={handleKeyDown}
           rows={8}
           placeholder="Write tips, instructions, notes… use line breaks to organise."
           className="w-full border border-gray-200 rounded-b-xl px-3 py-2.5 text-sm leading-relaxed resize-y focus:outline-none focus:ring-2 focus:ring-gray-900 placeholder:text-gray-300"
         />
+        {body.trim() && (
+          <div className="mt-2 border border-gray-200 rounded-xl px-3 py-2.5 bg-gray-50">
+            <p className="text-xs text-gray-400 mb-1.5 font-medium uppercase tracking-wide">Preview</p>
+            <div className="text-sm text-gray-700 leading-relaxed space-y-1">
+              {renderMarkdown(body)}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Video URL */}
@@ -228,10 +284,13 @@ export default function GuideEditor({ sections }: Props) {
                 </div>
               </div>
               <div className="px-5 py-4 space-y-4">
-                {section.body
-                  ? <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{section.body}</p>
-                  : <p className="text-sm text-gray-400 italic">No content yet — click Edit to add some.</p>
-                }
+                {section.body ? (
+                  <div className="text-sm text-gray-700 leading-relaxed space-y-1">
+                    {renderMarkdown(section.body)}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-400 italic">No content yet — click Edit to add some.</p>
+                )}
                 {section.video_url && (
                   <div className="rounded-xl overflow-hidden aspect-video bg-black">
                     <iframe src={section.video_url.replace('/view', '/preview').replace(/\?.*$/, '')}

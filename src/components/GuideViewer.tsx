@@ -1,6 +1,6 @@
 'use client'
 
-import ReactMarkdown from 'react-markdown'
+import { renderMarkdown } from '@/lib/renderMarkdown'
 
 type Section = {
   id: string
@@ -32,15 +32,8 @@ export default function GuideViewer({ sections }: { sections: Section[] }) {
           </div>
           <div className="px-5 py-4 space-y-4">
             {section.body ? (
-              <div className="prose prose-sm max-w-none text-gray-700
-                prose-p:my-1 prose-p:leading-relaxed
-                prose-ul:my-1 prose-ul:pl-5 prose-ul:list-disc
-                prose-ol:my-1 prose-ol:pl-5 prose-ol:list-decimal
-                prose-li:my-0.5
-                prose-strong:font-semibold prose-strong:text-gray-900
-                prose-em:italic
-                prose-a:text-blue-600 prose-a:underline hover:prose-a:text-blue-800">
-                <ReactMarkdown>{section.body}</ReactMarkdown>
+              <div className="text-sm text-gray-700">
+                {renderMarkdown(section.body)}
               </div>
             ) : (
               <p className="text-sm text-gray-400 italic">Nothing added yet.</p>
