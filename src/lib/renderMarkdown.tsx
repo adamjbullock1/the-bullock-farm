@@ -33,8 +33,9 @@ export function renderMarkdown(body: string): React.ReactNode {
   while (i < lines.length) {
     const line = lines[i]
 
-    // Blank line
+    // Blank line — render as spacing
     if (line.trim() === '') {
+      nodes.push(<div key={key++} className="h-2" />)
       i++
       continue
     }
