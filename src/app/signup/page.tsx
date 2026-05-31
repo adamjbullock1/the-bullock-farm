@@ -44,8 +44,8 @@ export default function SignupPage() {
         await supabase.from('profiles').update({ phone }).eq('id', data.user.id)
       }
 
-      // Notify admins — fire and forget so it never blocks the redirect
-      notifyAdminsOfSignup(fullName, email).catch(() => {})
+      // Notify admins before redirecting so the request isn't cancelled by navigation
+      await notifyAdminsOfSignup(fullName, email).catch(() => {})
 
       window.location.href = '/pending'
     } catch {
