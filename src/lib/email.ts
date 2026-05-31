@@ -51,7 +51,27 @@ export async function sendNewSignupAlert(adminEmails: string[], name: string, em
   })
 }
 
-// ── 2. Access approved → notify the new member ────────────────────────────────
+// ── 2. Shopping list reminder → sent mid-stay ─────────────────────────────────
+export async function sendShoppingListReminder(toEmail: string, firstName: string) {
+  if (!process.env.RESEND_API_KEY) return
+  await resend().emails.send({
+    from: FROM,
+    to: toEmail,
+    subject: 'Reminder: add anything to the shopping list?',
+    html: base(`
+      <h2 style="font-size:22px;margin-bottom:8px;">Hey ${firstName} 👋</h2>
+      <p style="color:#555;font-size:15px;line-height:1.6;">
+        You're about halfway through your stay at the farm — hope it's going well!
+      </p>
+      <p style="color:#555;font-size:15px;line-height:1.6;">
+        If you've noticed anything that needs restocking or picking up, now's a great time to add it to the shopping list so it's ready for next time.
+      </p>
+      ${btn('Open Shopping List →', `${BASE_URL}/dashboard/supply`)}
+    `),
+  })
+}
+
+// ── 3. Access approved → notify the new member ────────────────────────────────
 export async function sendWelcomeEmail(toEmail: string, firstName: string) {
   if (!process.env.RESEND_API_KEY) return
   await resend().emails.send({
